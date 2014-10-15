@@ -1,0 +1,56 @@
+#!/bin/bash --
+
+usage() {
+  cat << EOF
+usage: $0 [option] pattern
+  option:
+    -n              search not installed only (apt-cache search not in dpkg -l)
+    -a (default)    search all (apt-cache search)
+    -i              search installed (dpkg -l)
+EOF
+}
+
+searchtype='a'
+while getopts 'nai' o; do
+  case "$o" in
+    n) searchtype='ni' ;;
+    a) searchtype='a' ;;
+    i) searchtype='i' ;;
+    ?) usage; exit 1 ;;
+  esac
+done
+
+if [ ! $OPTIND -eq $# ]; then usage; exit 1; fi
+
+shift $(( $OPTIND-1 ))
+search="$1"
+
+installed="`dpkg -l | grep '^\s*ii\s' | sed 's/^\s*[^ ]\+\s\+\([^ ]\+\)\s.*$/ \1 /'`"
+
+while read l; do
+    p=${l%% *}
+    i=`echo "$installed" | grep " $p\( \|:[a-zA-Z0-9]* \)"`
+    if [ -z "$i" -a ! "$searchtype" = "i" ]; then
+        pnv=$( echo $p | sed 's|-*[0-9]*\.*[0-9]*$||' )
+        vs=''
+        s='.'" $installed "'.'
+        while [ ! -z "$s" ]; do
+            s=`echo $s | sed "s|^\(.*\s${pnv}\)\(\-\?[0-9]\+\.\?[0-9]*\)\?\s.*$|\1:v\2|"`
+            if [[ "$s" =~ ^.*:v(\-?[0-9]+\.?[0-9]*)?$ ]]; then
+                v="${s##*:v}"
+                vs="$vs v$v"
+                s="${s% *} ."
+            else
+                s=''
+            fi
+        done
+        if [ ! -z "$vs" ]; then
+            if [ "`echo $vs | wc -w`" = "1" ]; then vs="${vs# } is installed"; else vs="${vs# } are installed"; fi
+            l="${l%% *} (\e[1;32m$vs\e[0m) ${l#* }"
+        fi
+        echo -e "\e[1;31m${l%% *}\e[0m ${l#* }"
+    fi
+    if [ ! -z "$i" -a ! "$searchtype" = "ni" ]; then
+        echo -e "\e[1;32m${l%% *}\e[0m ${l#* }"
+    fi
+done < <( apt-cache search "$search" | sort )
