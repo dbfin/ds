@@ -45,7 +45,7 @@ while read l; do
 			also='also '
 			vs=$( echo "$vs" | grep -v " $p " )
 		fi
-		[ -z "$vs" ] || vs='('$also'installed:\e[0;32m'${vs% }'\e[0m)'
-		echo -e "$color$p\e[0m "$vs" $pd"
+		[ -z "$vs" ] || vs=' ('$also'installed:\e[0;32m'${vs% }'\e[0m)'
+		echo -e "$color$p\e[0m"$vs" $pd"
 	fi
 done < <( apt-cache search$acoptions "$search" | sort )
