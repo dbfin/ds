@@ -28,14 +28,14 @@ if [ ! $OPTIND -eq $# ]; then usage; exit 1; fi
 shift $(( $OPTIND-1 ))
 search="$1"
 
-installed="`dpkg -l | grep -o -P '(?<=^ii)\s+[^\s]+\s'`"
+installed="`dpkg -l | grep -o -P '(?<=^[a-z]i)\s+[^\s:]+(?=\s|:)'`"
 
 while read l; do
 	p=${l%% *}
 	pd=${l#* }
-	sp="$( echo $p | sed 's:\([-.\:]*[0-9]\+\)\+:([-.\:]*[0-9]+)*:g' )"'([-.\:]*[0-9]+)*'
-	vs=$( echo "$installed" | grep -o -P " $sp " )
-	i=$( echo "$vs" | grep " $p " )
+	sp=" $( echo $p | sed 's:\([-.\:]*[0-9]\+\)\+:([-.\:]*[0-9]+)*:g' )([-.:]*[0-9]+)*\$"
+	vs=$( echo "$installed" | grep -o -P "$sp" )
+	i=$( echo "$vs" | grep " $p" )
 	if [ -z "$i" -a "$searchtype" != "i" -o -n "$i" -a "$searchtype" != "ni" ]; then
 		if [ -z "$i" ]; then
 			color='\e[1;31m'
@@ -43,7 +43,7 @@ while read l; do
 		else
 			color='\e[1;32m'
 			also='also '
-			vs=$( echo "$vs" | grep -v " $p " )
+			vs=$( echo "$vs" | grep -v " $p" )
 		fi
 		[ -z "$vs" ] || vs=' ('$also'installed:\e[0;32m'${vs% }'\e[0m)'
 		echo -e "$color$p\e[0m"$vs" $pd"
