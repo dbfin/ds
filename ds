@@ -4,10 +4,10 @@ usage() {
 	cat << EOF
 usage: $0 [option] pattern
   option:
-    -a (default)	search all (apt-cache search)
-    -n			  search not installed only (apt-cache search not in dpkg -l)
-    -i			  search installed (dpkg -l)
-    -s			  strict search: search pattern in package names only
+    -a (default)       search all (apt-cache search)
+    -n                 search not installed only (apt-cache search not in dpkg -l)
+    -i                 search installed (dpkg -l)
+    -s                 strict search: search pattern in package names only
 EOF
 }
 
