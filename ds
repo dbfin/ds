@@ -2,7 +2,7 @@
 
 usage() {
 	cat << EOF
-usage: $0 [option] pattern
+usage: `basename $0` [option] pattern
   option:
     -a (default)       search all (apt-cache search)
     -n                 search not installed only (apt-cache search not in dpkg -l)
